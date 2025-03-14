@@ -1,1 +1,35 @@
+version: "3.8"
+
+services:
+  paymybuddy-db:
+    image: thomasqlf/paymybuddy-mysql:latest
+    container_name: paymybuddy-db
+    restart: always
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      retries: 5
+      start_period: 20s
+
+
+  paymybuddy-backend:
+    image: thomasqlf/paymybuddy-backend:latest
+    container_name: paymybuddy-backend
+    restart: always
+    depends_on:
+      paymybuddy-db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://paymybuddy-db:3306/db_paymybuddy?autoReconnect=true&allowPublicKeyRetrieval=true&useSSL=false
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: password
+    ports:
+      - "8080:8080"
+
+volumes:
+  db_data:
 

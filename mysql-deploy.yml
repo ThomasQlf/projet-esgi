@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: paymybuddy-db
+  namespace: paymybuddy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: paymybuddy-db
+  template:
+    metadata:
+      labels:
+        app: paymybuddy-db
+    spec:
+      containers:
+        - name: mysql
+          image: thomasqlf/paymybuddy-mysql:latest
+          envFrom:
+            - configMapRef:
+                name: paymybuddy-config
+            - secretRef:
+                name: paymybuddy-secrets
+          ports:
+            - containerPort: 3306
+          volumeMounts:
+            - name: mysql-storage
+              mountPath: /var/lib/mysql
+      volumes:
+        - name: mysql-storage
+          persistentVolumeClaim:
+            claimName: mysql-pvc
